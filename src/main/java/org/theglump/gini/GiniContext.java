@@ -14,11 +14,11 @@ import com.google.common.collect.Maps;
 
 /**
  * Gini is a simple DI Container :
- * 		- Managed bean are singletons
- * 		- Injection is done by type and by name if it fails.
+ * 		- beans are singletons
+ * 		- injection is done by type then by name.
  * 
  * Managed classes must be annotated with {@link Managed}
- * Field must be annotated with @link {@link Inject}
+ * Field must be annotated with {@link Inject}
  * 
  * @author sebastien.rozange
  *
@@ -30,8 +30,8 @@ public class GiniContext {
 	/**
 	 * Initialize a new context by scanning all classes and sub-classes of the given package
 	 * 
-	 * This is done in 2 steps :
-	 * 		- Instanciation of all managed bean
+	 * Context is builded in 2 steps :
+	 * 		- Instanciation of all managed beans (without deps)
 	 * 		- Injection of dependencies
 	 * 
 	 * @param packageName
@@ -44,7 +44,7 @@ public class GiniContext {
 	/**
 	 * Returns the managed bean corresponding to the given class
 	 * 
-	 * If the given class is an interface, the dependency injection is done by field name
+	 * If the given class is an interface and 2 or more implementations exist, injection is done by field name
 	 * 
 	 * @param clazz
 	 * 			The class of searched bean
@@ -57,8 +57,7 @@ public class GiniContext {
 	}
 	
 	/**
-	 * 
-	 * Injects managed bean in fields annotated {@link Inject} from provided object
+	 * Injects managed bean in provided object (via fields annotated {@link Inject})
 	 * 
 	 * @param object to perform injection on
 	 */
@@ -100,11 +99,11 @@ public class GiniContext {
 		}
 	}
 	
-	private void addToReferential(Class<?> superType, Object bean) {
-		Set<Object> beans = managedBeans.get(superType);
+	private void addToReferential(Class<?> clazz, Object bean) {
+		Set<Object> beans = managedBeans.get(clazz);
 		if (beans == null) {
 			beans = new HashSet<Object>();
-			managedBeans.put(superType, beans);
+			managedBeans.put(clazz, beans);
 		}
 		beans.add(bean);
 	}
