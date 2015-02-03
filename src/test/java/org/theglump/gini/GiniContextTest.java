@@ -23,8 +23,8 @@ public class GiniContextTest {
 		root = ctx.getBean(Root.class);
 		
 		// Assert
-		assertThat(root.getStepImpl1()).isInstanceOf(StepImpl1.class);
-		assertThat(root.getStepImpl2()).isInstanceOf(StepImpl2.class);
+		assertThat(root.getStep1()).isInstanceOf(StepImpl1.class);
+		assertThat(root.getStep2()).isInstanceOf(StepImpl2.class);
 		assertThat(root.getConcreteStep()).isInstanceOf(StepImpl1.class);
 		assertThat(root.getConcreteStep().getRule()).isInstanceOf(RuleImpl.class);
 	}
@@ -38,8 +38,8 @@ public class GiniContextTest {
 		ctx.inject(this);
 		
 		// Assert
-		assertThat(root.getStepImpl1()).isInstanceOf(StepImpl1.class);
-		assertThat(root.getStepImpl2()).isInstanceOf(StepImpl2.class);
+		assertThat(root.getStep1()).isInstanceOf(StepImpl1.class);
+		assertThat(root.getStep2()).isInstanceOf(StepImpl2.class);
 		assertThat(root.getConcreteStep()).isInstanceOf(StepImpl1.class);
 		assertThat(root.getConcreteStep().getRule()).isInstanceOf(RuleImpl.class);
 	}

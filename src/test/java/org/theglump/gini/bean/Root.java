@@ -15,11 +15,11 @@ public class Root {
 	@Inject
 	private StepImpl1 concreteStep;
 
-	public IStep getStepImpl1() {
+	public IStep getStep1() {
 		return stepImpl1;
 	}
 
-	public IStep getStepImpl2() {
+	public IStep getStep2() {
 		return stepImpl2;
 	}
 
