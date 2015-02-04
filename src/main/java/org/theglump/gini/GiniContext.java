@@ -1,16 +1,20 @@
 package org.theglump.gini;
 
+import static org.reflections.ReflectionUtils.getAllFields;
+import static org.reflections.ReflectionUtils.getAllSuperTypes;
+import static org.reflections.ReflectionUtils.withAnnotation;
+import static org.theglump.gini.GiniUtils.injectField;
+
 import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * Gini is a simple DI Container :
@@ -25,8 +29,11 @@ import com.google.common.collect.Maps;
  */
 public class GiniContext {
 
-	private final Map<Class<?>, Set<Object>> managedBeans = Maps.newHashMap();
-
+	private final Map<Class<?>, Set<Object>> typeToBeans = Maps.newHashMap();
+	private final Set<Object> beans = Sets.newHashSet();
+	
+	private final String packageName;
+	
 	/**
 	 * Initialize a new context by scanning all classes and sub-classes of the given package
 	 * 
@@ -38,9 +45,11 @@ public class GiniContext {
 	 */
 	public GiniContext(String packageName) {
 		Preconditions.checkNotNull(packageName);
-		initializeContext(packageName);
+		this.packageName = packageName;
+		
+		instanciateBeans();
+		injectDependencies();
 	}
-
 	/**
 	 * Returns the managed bean corresponding to the given class
 	 * 
@@ -53,7 +62,7 @@ public class GiniContext {
 	 */
 	public <T> T getBean(Class<T> clazz) {
 		Preconditions.checkNotNull(clazz);
-		return getFromReferential(clazz, null);
+		return getBean(clazz, null);
 	}
 	
 	/**
@@ -66,51 +75,50 @@ public class GiniContext {
 		injectDependencies(object);
 	}
 	
-	private void initializeContext(String packageName) {
+	private void instanciateBeans() {
 		Reflections reflections = new Reflections(packageName);
-		Set<Object> beans = new HashSet<Object>();
-		
 		for (Class<?> clazz : reflections.getTypesAnnotatedWith(Managed.class)) {
-			beans.add(instanciate(clazz));
+			registerBean(GiniUtils.instantiate(clazz));
 		}
-		
+	}
+	
+	private void injectDependencies() {
 		for (Object bean : beans) {
 			injectDependencies(bean);
 		}
-	}
-
-	private Object instanciate(Class<?> clazz) {
-		Object bean = GiniUtils.instantiate(clazz);
-		addToReferential(bean);
-		return bean;
-	}
+	} 
 	
+	@SuppressWarnings("unchecked")
 	private void injectDependencies(Object bean) {
-		for (Field field : getCandidateFieldsForInjection(bean.getClass())) {
-			GiniUtils.injectField(bean, field, getFromReferential(field.getType(), field.getName()));
+		for (Field field : getAllFields(bean.getClass(), withAnnotation(Inject.class))) {
+			injectField(bean, field, getBean(field.getType(), field.getName()));
 		}
 	}
 
-	private void addToReferential(Object bean) {
-		addToReferential(bean.getClass(), bean);
-		Set<Class<?>> superTypes = ReflectionUtils.getAllSuperTypes(bean.getClass());
+	private void registerBean(Object bean) {
+		beans.add(bean);
+		registerBean(bean.getClass(), bean);
+		extracted(bean);
+	}
+	private void extracted(Object bean) {
+		Set<Class<?>> superTypes = getAllSuperTypes(bean.getClass());
 		for (Class<?> superType : superTypes) {
-			addToReferential(superType, bean);
+			registerBean(superType, bean);
 		}
 	}
 	
-	private void addToReferential(Class<?> clazz, Object bean) {
-		Set<Object> beans = managedBeans.get(clazz);
+	private void registerBean(Class<?> clazz, Object bean) {
+		Set<Object> beans = typeToBeans.get(clazz);
 		if (beans == null) {
 			beans = new HashSet<Object>();
-			managedBeans.put(clazz, beans);
+			typeToBeans.put(clazz, beans);
 		}
 		beans.add(bean);
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	private <T> T getFromReferential(Class<T> clazz, String fieldName) {
-		Set<Object> beans = managedBeans.get(clazz);
+	private <T> T getBean(Class<T> clazz, String fieldName) {
+		Set<Object> beans = typeToBeans.get(clazz);
 		if (beans == null) {
 			throw new GiniException("Could not find an instance for " + clazz.getCanonicalName());
 		} else if (beans.size() == 1) {
@@ -127,11 +135,6 @@ public class GiniContext {
 
 	private boolean canInjectByName(String fieldName, Object bean) {
 		return GiniUtils.className(bean.getClass()).equalsIgnoreCase(fieldName);
-	}
-
-	@SuppressWarnings("unchecked")
-	protected Set<Field> getCandidateFieldsForInjection(Class<?> clazz) {
-		return ReflectionUtils.getAllFields(clazz, ReflectionUtils.withAnnotation(Inject.class));
 	}
 
 }
