@@ -98,13 +98,13 @@ public class GiniContext {
 
 	private void registerBean(Object bean) {
 		beans.add(bean);
-		registerBean(bean.getClass(), bean);
+		addTypeForBean(bean.getClass(), bean);
 		for (Class<?> superType : getAllSuperTypes(bean.getClass())) {
-			registerBean(superType, bean);
+			addTypeForBean(superType, bean);
 		}
 	}
 	
-	private void registerBean(Class<?> clazz, Object bean) {
+	private void addTypeForBean(Class<?> clazz, Object bean) {
 		Set<Object> beans = typeToBeans.get(clazz);
 		if (beans == null) {
 			beans = new HashSet<Object>();
