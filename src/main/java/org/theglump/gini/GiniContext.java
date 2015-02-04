@@ -50,6 +50,7 @@ public class GiniContext {
 		instanciateBeans();
 		injectDependencies();
 	}
+	
 	/**
 	 * Returns the managed bean corresponding to the given class
 	 * 
@@ -98,11 +99,7 @@ public class GiniContext {
 	private void registerBean(Object bean) {
 		beans.add(bean);
 		registerBean(bean.getClass(), bean);
-		extracted(bean);
-	}
-	private void extracted(Object bean) {
-		Set<Class<?>> superTypes = getAllSuperTypes(bean.getClass());
-		for (Class<?> superType : superTypes) {
+		for (Class<?> superType : getAllSuperTypes(bean.getClass())) {
 			registerBean(superType, bean);
 		}
 	}
