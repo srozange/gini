@@ -3,17 +3,14 @@ package org.theglump.gini;
 import static org.reflections.ReflectionUtils.getAllFields;
 import static org.reflections.ReflectionUtils.getAllSuperTypes;
 import static org.reflections.ReflectionUtils.withAnnotation;
-import static org.theglump.gini.GiniUtils.injectField;
 
 import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.reflections.Reflections;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Sets;
 
 /**
@@ -29,7 +26,7 @@ import com.google.common.collect.Sets;
  */
 public class GiniContext {
 
-	private final Map<Class<?>, Set<Object>> typeToBeans = Maps.newHashMap();
+	private final HashMultimap<Class<?>, Object> typeToBeans  = HashMultimap.create();
 	private final Set<Object> beans = Sets.newHashSet();
 	
 	private final String packageName;
@@ -92,27 +89,18 @@ public class GiniContext {
 	@SuppressWarnings("unchecked")
 	private void injectDependencies(Object bean) {
 		for (Field field : getAllFields(bean.getClass(), withAnnotation(Inject.class))) {
-			injectField(bean, field, getBean(field.getType(), field.getName()));
+			GiniUtils.injectField(bean, field, getBean(field.getType(), field.getName()));
 		}
 	}
 
 	private void registerBean(Object bean) {
 		beans.add(bean);
-		addTypeForBean(bean.getClass(), bean);
+		typeToBeans.put(bean.getClass(), bean);
 		for (Class<?> superType : getAllSuperTypes(bean.getClass())) {
-			addTypeForBean(superType, bean);
+			typeToBeans.put(superType, bean);
 		}
 	}
 	
-	private void addTypeForBean(Class<?> clazz, Object bean) {
-		Set<Object> beans = typeToBeans.get(clazz);
-		if (beans == null) {
-			beans = new HashSet<Object>();
-			typeToBeans.put(clazz, beans);
-		}
-		beans.add(bean);
-	}
-
 	@SuppressWarnings("unchecked")
 	private <T> T getBean(Class<T> clazz, String fieldName) {
 		Set<Object> beans = typeToBeans.get(clazz);
