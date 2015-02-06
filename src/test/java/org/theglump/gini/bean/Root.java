@@ -1,7 +1,7 @@
 package org.theglump.gini.bean;
 
-import org.theglump.gini.Inject;
-import org.theglump.gini.Managed;
+import org.theglump.gini.annotation.Inject;
+import org.theglump.gini.annotation.Managed;
 
 @Managed
 public class Root {

@@ -21,11 +21,25 @@ class Store {
 	private final Set<Object> beans = Sets.newHashSet();
 
 	protected void registerBean(Object bean) {
+		Class<?> clazz = Utils.getRealClass(bean.getClass());
 		beans.add(bean);
-		typeToBeans.put(bean.getClass(), bean);
-		for (Class<?> superType : getAllSuperTypes(bean.getClass())) {
+		typeToBeans.put(clazz, bean);
+		for (Class<?> superType : getAllSuperTypes(clazz)) {
 			typeToBeans.put(superType, bean);
 		}
+	}
+
+	protected void replaceBean(Object newBean) {
+		Class<?> clazz = Utils.getRealClass(newBean.getClass());
+		if (typeToBeans.containsKey(clazz)) {
+			Object oldBean = typeToBeans.get(clazz).iterator().next();
+			beans.remove(oldBean);
+			typeToBeans.remove(clazz, oldBean);
+			for (Class<?> superType : getAllSuperTypes(clazz)) {
+				typeToBeans.remove(superType, oldBean);
+			}
+		}
+		registerBean(newBean);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -53,7 +67,8 @@ class Store {
 	}
 
 	private boolean canInjectByName(String fieldName, Object bean) {
-		return GiniUtils.className(bean.getClass()).equalsIgnoreCase(fieldName);
+		return Utils.className(Utils.getRealClass(bean.getClass()))
+				.equalsIgnoreCase(fieldName);
 	}
 
 }

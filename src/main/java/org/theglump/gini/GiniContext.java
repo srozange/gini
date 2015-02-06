@@ -4,10 +4,26 @@ import static org.reflections.ReflectionUtils.getAllFields;
 import static org.reflections.ReflectionUtils.withAnnotation;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Map;
+import java.util.Set;
 
+import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.MethodInterceptor;
+import net.sf.cglib.proxy.MethodProxy;
+
+import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
+import org.theglump.gini.annotation.Around;
+import org.theglump.gini.annotation.Inject;
+import org.theglump.gini.annotation.Managed;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.SetMultimap;
 
 /**
  * Gini is a simple DI Container : - beans are singletons - injection is done by
@@ -22,7 +38,10 @@ import com.google.common.base.Preconditions;
 public class GiniContext {
 
 	private final Store store;
-	private final String packageName;
+	private final Reflections reflections;
+
+	private final Map<Class<?>, SetMultimap<Method, Advice>> advisedMethods = Maps
+			.newHashMap();
 
 	/**
 	 * Initialize a new context by scanning all classes and sub-classes of the
@@ -35,11 +54,11 @@ public class GiniContext {
 	 */
 	public GiniContext(String packageName) {
 		Preconditions.checkNotNull(packageName);
-
-		this.packageName = packageName;
+		this.reflections = new Reflections(packageName);
 		this.store = new Store();
 
 		instanciateBeans();
+		collectAdvices();
 		injectDependencies();
 	}
 
@@ -71,10 +90,63 @@ public class GiniContext {
 	}
 
 	private void instanciateBeans() {
-		Reflections reflections = new Reflections(packageName);
 		for (Class<?> clazz : reflections.getTypesAnnotatedWith(Managed.class)) {
-			Object bean = GiniUtils.instantiate(clazz);
+			Object bean = Utils.instantiate(clazz);
 			store.registerBean(bean);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void collectAdvices() {
+		for (Class<?> clazz : reflections
+				.getTypesAnnotatedWith(org.theglump.gini.annotation.Advice.class)) {
+			for (Method method : ReflectionUtils.getMethods(clazz,
+					withAnnotation(Around.class))) {
+				Around around = method.getAnnotation(Around.class);
+				matchMethods(around.target(),
+						new Advice(Utils.instantiate(clazz), method));
+			}
+		}
+
+		for (Class<?> clazz : advisedMethods.keySet()) {
+			Enhancer enhancer = new Enhancer();
+			enhancer.setSuperclass(clazz);
+			enhancer.setCallback(methodInterceptor);
+			Object proxy = enhancer.create();
+			store.replaceBean(proxy);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void matchMethods(String target, Advice advice) {
+		Set<Object> beans = store.getBeans();
+		for (Object bean : beans) {
+			Set<Method> methods = ReflectionUtils.getMethods(bean.getClass(),
+					new Predicate<Method>() {
+
+						@Override
+						public boolean apply(final Method method) {
+							return Modifier.isPublic(method.getModifiers());
+						}
+
+					});
+
+			for (Method method : methods) {
+				String id = bean.getClass().getPackage().getName() + "."
+						+ Utils.className(bean.getClass()) + "."
+						+ method.getName();
+
+				if (id.matches(target)) {
+					SetMultimap<Method, Advice> methodToAdvices = advisedMethods
+							.get(bean);
+					if (methodToAdvices == null) {
+						methodToAdvices = HashMultimap.create();
+						advisedMethods.put(bean.getClass(), methodToAdvices);
+					}
+					methodToAdvices.put(method, advice);
+				}
+			}
+
 		}
 	}
 
@@ -86,11 +158,42 @@ public class GiniContext {
 
 	@SuppressWarnings("unchecked")
 	private void injectDependencies(Object bean) {
-		for (Field field : getAllFields(bean.getClass(),
+		for (Field field : getAllFields(Utils.getRealClass(bean.getClass()),
 				withAnnotation(Inject.class))) {
 			Object dependency = store.getBean(field.getType(), field.getName());
-			GiniUtils.injectField(bean, field, dependency);
+			Utils.injectField(bean, field, dependency);
 		}
+	}
+
+	private MethodInterceptor methodInterceptor = new net.sf.cglib.proxy.MethodInterceptor() {
+
+		@Override
+		public Object intercept(Object bean, Method method, Object[] args,
+				MethodProxy proxy) throws Throwable {
+
+			SetMultimap<Method, Advice> advices = GiniContext.this.advisedMethods
+					.get(bean.getClass().getSuperclass());
+			if (advices.containsKey(method)) {
+				Set<Advice> set = advices.get(method);
+				Advice advice = set.iterator().next();
+				return advice.method.invoke(advice.advice, new Object[] { bean,
+						method, args, proxy });
+			}
+			return proxy.invokeSuper(bean, args);
+		}
+
+	};
+
+	private class Advice {
+
+		Object advice;
+		Method method;
+
+		Advice(Object advice, Method method) {
+			this.advice = advice;
+			this.method = method;
+		}
+
 	}
 
 }
