@@ -58,15 +58,6 @@ class BeanStore {
 		throw new GiniException("Several instance for " + clazz.getCanonicalName() + " - could not find the matching one");
 	}
 
-	protected void addAdvice(Class<?> beanClazz, Method beanMethod, Interceptor interceptor) {
-		SetMultimap<Method, Interceptor> advices = interceptedMethods.get(beanClazz);
-		if (advices == null) {
-			advices = HashMultimap.create();
-			interceptedMethods.put(beanClazz, advices);
-		}
-		advices.put(beanMethod, interceptor);
-	}
-
 	protected Set<Object> getBeans() {
 		return Collections.unmodifiableSet(beans);
 	}
