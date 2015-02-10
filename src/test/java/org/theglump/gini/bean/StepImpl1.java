@@ -14,7 +14,7 @@ public class StepImpl1 implements IStep {
 	}
 
 	@Override
-	public String method1() {
+	public String implemName() {
 		return "stepImpl1";
 	}
 }

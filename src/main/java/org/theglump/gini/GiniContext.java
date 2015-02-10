@@ -13,6 +13,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 import org.reflections.Reflections;
 import org.theglump.gini.annotation.Advice;
 import org.theglump.gini.annotation.Around;
@@ -70,6 +72,7 @@ public class GiniContext {
 	 *            The class of searched bean
 	 * @return The corresponding managed bean
 	 */
+	@Nonnull
 	public <T> T getBean(Class<T> clazz) {
 		Preconditions.checkNotNull(clazz);
 		return store.getBean(clazz, null);
@@ -94,7 +97,7 @@ public class GiniContext {
 			Object advice = instantiate(clazz);
 			for (Method method : getMethods(clazz, withAnnotation(Around.class))) {
 				final Around around = method.getAnnotation(Around.class);
-				Set<Method> methodsToBeIntercepted = getMethodsToBeIntercepted(candidateMethodsForInterception, around);
+				Set<Method> methodsToBeIntercepted = getMethodsToBeIntercepted(candidateMethodsForInterception, around.joinpoint());
 				if (methodsToBeIntercepted.size() > 0) {
 					Interceptor interceptor = new Interceptor(advice, method, around.joinpoint());
 					store.registerInterceptor(interceptor, methodsToBeIntercepted);
@@ -111,15 +114,14 @@ public class GiniContext {
 		return methods;
 	}
 
-	private Set<Method> getMethodsToBeIntercepted(Set<Method> candidateMethodsForInterception, final Around around) {
-		Set<Method> methods = Sets.filter(candidateMethodsForInterception, new Predicate<Method>() {
+	private Set<Method> getMethodsToBeIntercepted(Set<Method> candidateMethodsForInterception, final String joinpoint) {
+		return Sets.filter(candidateMethodsForInterception, new Predicate<Method>() {
 
 			@Override
 			public boolean apply(Method method) {
-				return Utils.computeMethodPath(method).matches(around.joinpoint());
+				return Utils.computeMethodPath(method).matches(joinpoint);
 			}
 		});
-		return methods;
 	}
 
 	private void instanciateBeans() {

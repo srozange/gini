@@ -65,8 +65,7 @@ public class Utils {
 	}
 
 	protected static String className(Class<?> clazz) {
-		String name = clazz.getName();
-		return name.substring(name.lastIndexOf(".") + 1);
+		return clazz.getName().substring(clazz.getName().lastIndexOf(".") + 1);
 	}
 
 	protected static Class<?> getProxifiedClass(Class<?> clazz) {

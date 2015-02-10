@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
@@ -75,6 +77,7 @@ class BeanStore {
 		}
 	}
 
+	@Nonnull
 	protected Set<Interceptor> getInterceptorsForMethod(Method method) {
 		Class<?> proxifiedClass = getProxifiedClass(method.getDeclaringClass());
 		SetMultimap<Method, Interceptor> interceptorForMethod = interceptedMethods.get(proxifiedClass);
@@ -84,6 +87,7 @@ class BeanStore {
 		return EMPTY_INTERCEPTOR_SET;
 	}
 
+	@Nonnull
 	protected SetMultimap<Method, Interceptor> getInterceptorsForMethodMap(Class<?> clazz) {
 		Class<?> proxifiedClass = getProxifiedClass(clazz);
 		if (interceptedMethods.containsKey(proxifiedClass)) {

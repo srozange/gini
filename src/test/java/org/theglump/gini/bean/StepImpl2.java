@@ -6,7 +6,7 @@ import org.theglump.gini.annotation.Managed;
 public class StepImpl2 implements IStep {
 
 	@Override
-	public String method1() {
+	public String implemName() {
 		return "stepImpl2";
 	}
 
