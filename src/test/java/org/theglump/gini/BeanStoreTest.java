@@ -5,7 +5,6 @@ import static org.theglump.gini.Utils.getPublicMethods;
 import static org.theglump.gini.Utils.instantiate;
 
 import java.lang.reflect.Method;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Test;
@@ -48,39 +47,28 @@ public class BeanStoreTest {
 	}
 
 	@Test
-	public void should_find_interceptor_when_submitted_path_matches() {
-		Interceptor interceptor = new Interceptor(null, null, ".*Class1.method1");
-
-		store.registerInterceptor(interceptor);
-
-		Set<Interceptor> interceptors = store.findInterceptor("org.theglump.gini.Class1.method1");
-		assertThat(interceptors).isNotNull().hasSize(1);
-		assertThat(interceptors.iterator().next()).isEqualTo(interceptor);
-	}
-
-	@Test
 	public void should_find_interceptors_for_submitted_method() {
 		Method m = getPublicMethods(Advice1.class).iterator().next();
-		Interceptor interceptor = new Interceptor(instantiate(Advice1.class), m, ".*Class1.method1");
-		HashSet<Interceptor> interceptors = Sets.newHashSet(interceptor);
+		final Interceptor interceptor = new Interceptor(instantiate(Advice1.class), m, ".*Class1.method1");
+		store.registerInterceptor(interceptor, Sets.newHashSet(m));
 
-		store.addInterceptorsForMethod(m, interceptors);
+		Set<Interceptor> fetchedInterceptors = store.getInterceptorsForMethod(m);
 
-		Set<Interceptor> interceptors_new = store.getInterceptorsForMethod(m);
-		assertThat(interceptors_new).isEqualTo(interceptors);
+		assertThat(fetchedInterceptors).isNotEmpty().hasSize(1);
+		assertThat(fetchedInterceptors.iterator().next()).isEqualTo(interceptor);
 	}
 
 	@Test
 	public void should_return_incerceptor_per_method_map_for_submitted_class() {
 		Method m = getPublicMethods(Advice1.class).iterator().next();
-		Interceptor interceptor = new Interceptor(instantiate(Advice1.class), m, ".*Class1.method1");
-		HashSet<Interceptor> interceptors = Sets.newHashSet(interceptor);
+		final Interceptor interceptor = new Interceptor(instantiate(Advice1.class), m, ".*Class1.method1");
+		store.registerInterceptor(interceptor, Sets.newHashSet(m));
 
-		store.addInterceptorsForMethod(m, interceptors);
+		SetMultimap<Method, Interceptor> interceptorsForMethodMap = store.getInterceptorsForMethodMap(m.getDeclaringClass());
 
-		SetMultimap<Method, Interceptor> interceptors_new = store.getInterceptorsForMethodMap(Advice1.class);
-		assertThat(interceptors_new).isNotNull();
-		assertThat(interceptors_new.get(m)).isEqualTo(interceptors);
+		assertThat(interceptorsForMethodMap).isNotNull();
+		assertThat(interceptorsForMethodMap.get(m)).isNotEmpty().hasSize(1);
+		assertThat(interceptorsForMethodMap.get(m).iterator().next()).isEqualTo(interceptor);
 	}
 
 }

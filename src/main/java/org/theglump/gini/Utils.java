@@ -1,5 +1,7 @@
 package org.theglump.gini;
 
+import static org.reflections.ReflectionUtils.getMethods;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -7,8 +9,6 @@ import java.util.Set;
 
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
-
-import org.reflections.ReflectionUtils;
 
 import com.google.common.base.Predicate;
 
@@ -60,7 +60,7 @@ public class Utils {
 
 	@SuppressWarnings("unchecked")
 	protected static Set<Method> getPublicMethods(Class<?> clazz) {
-		return ReflectionUtils.getMethods(clazz, PUBLIC_METHOD_PREDICATE);
+		return getMethods(clazz, PUBLIC_METHOD_PREDICATE);
 
 	}
 
@@ -74,7 +74,7 @@ public class Utils {
 	}
 
 	protected static String computeMethodPath(Method method) {
-		return method.getDeclaringClass().getPackage().getName() + "." + Utils.className(method.getDeclaringClass()) + "." + method.getName();
+		return method.getDeclaringClass().getName() + "." + method.getName();
 	}
 
 }

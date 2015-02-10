@@ -5,4 +5,8 @@ import org.theglump.gini.annotation.Managed;
 @Managed
 public class RuleImpl implements IRule {
 
+	public String getStr() {
+		return "ruleImpl";
+	}
+
 }

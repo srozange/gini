@@ -3,7 +3,6 @@ package org.theglump.gini;
 import static org.reflections.ReflectionUtils.getAllFields;
 import static org.reflections.ReflectionUtils.getMethods;
 import static org.reflections.ReflectionUtils.withAnnotation;
-import static org.theglump.gini.Utils.computeMethodPath;
 import static org.theglump.gini.Utils.createProxy;
 import static org.theglump.gini.Utils.getProxifiedClass;
 import static org.theglump.gini.Utils.getPublicMethods;
@@ -21,6 +20,8 @@ import org.theglump.gini.annotation.Inject;
 import org.theglump.gini.annotation.Managed;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Sets;
 
 /**
  * Gini is a simple DI Container and AOP engine : - beans are singletons -
@@ -54,7 +55,7 @@ public class GiniContext {
 		this.reflections = new Reflections(packageName);
 		this.store = new BeanStore();
 
-		computeAdvices();
+		instanciateInterceptors();
 		instanciateBeans();
 		injectDependencies();
 	}
@@ -86,31 +87,39 @@ public class GiniContext {
 		injectDependencies(object);
 	}
 
-	private void computeAdvices() {
-		instanciateInterceptors();
-		findInterceptedMethods();
-	}
-
 	@SuppressWarnings("unchecked")
 	private void instanciateInterceptors() {
+		Set<Method> candidateMethodsForInterception = getCandidateMethodsForInterception();
 		for (Class<?> clazz : reflections.getTypesAnnotatedWith(Advice.class)) {
+			Object advice = instantiate(clazz);
 			for (Method method : getMethods(clazz, withAnnotation(Around.class))) {
-				Around around = method.getAnnotation(Around.class);
-				Interceptor interceptor = new Interceptor(instantiate(clazz), method, around.joinpoint());
-				store.registerInterceptor(interceptor);
-			}
-		}
-	}
-
-	private void findInterceptedMethods() {
-		for (Class<?> clazz : reflections.getTypesAnnotatedWith(Managed.class)) {
-			for (Method method : getPublicMethods(clazz)) {
-				Set<Interceptor> interceptors = store.findInterceptor(computeMethodPath(method));
-				if (interceptors.size() > 0) {
-					store.addInterceptorsForMethod(method, interceptors);
+				final Around around = method.getAnnotation(Around.class);
+				Set<Method> methodsToBeIntercepted = getMethodsToBeIntercepted(candidateMethodsForInterception, around);
+				if (methodsToBeIntercepted.size() > 0) {
+					Interceptor interceptor = new Interceptor(advice, method, around.joinpoint());
+					store.registerInterceptor(interceptor, methodsToBeIntercepted);
 				}
 			}
 		}
+	}
+
+	private Set<Method> getCandidateMethodsForInterception() {
+		Set<Method> methods = Sets.newHashSet();
+		for (Class<?> clazz : reflections.getTypesAnnotatedWith(Managed.class)) {
+			methods.addAll(getPublicMethods(clazz));
+		}
+		return methods;
+	}
+
+	private Set<Method> getMethodsToBeIntercepted(Set<Method> candidateMethodsForInterception, final Around around) {
+		Set<Method> methods = Sets.filter(candidateMethodsForInterception, new Predicate<Method>() {
+
+			@Override
+			public boolean apply(Method method) {
+				return Utils.computeMethodPath(method).matches(around.joinpoint());
+			}
+		});
+		return methods;
 	}
 
 	private void instanciateBeans() {

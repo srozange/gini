@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
@@ -62,28 +61,18 @@ class BeanStore {
 		return Collections.unmodifiableSet(beans);
 	}
 
-	protected void registerInterceptor(Interceptor interceptor) {
+	protected void registerInterceptor(Interceptor interceptor, Set<Method> methods) {
 		interceptors.add(interceptor);
-	}
-
-	protected Set<Interceptor> findInterceptor(final String path) {
-		return Sets.filter(interceptors, new Predicate<Interceptor>() {
-
-			@Override
-			public boolean apply(Interceptor interceptor) {
-				return path.matches(interceptor.jointpoint);
+		for (Method m : methods) {
+			Class<?> proxifiedClass = getProxifiedClass(m.getDeclaringClass());
+			SetMultimap<Method, Interceptor> _interceptors = interceptedMethods.get(proxifiedClass);
+			if (_interceptors == null) {
+				_interceptors = HashMultimap.create();
+				interceptedMethods.put(proxifiedClass, _interceptors);
 			}
-		});
-	}
+			_interceptors.put(m, interceptor);
 
-	protected void addInterceptorsForMethod(Method method, Set<Interceptor> interceptors) {
-		Class<?> proxifiedClass = getProxifiedClass(method.getDeclaringClass());
-		SetMultimap<Method, Interceptor> _interceptors = interceptedMethods.get(proxifiedClass);
-		if (_interceptors == null) {
-			_interceptors = HashMultimap.create();
-			interceptedMethods.put(proxifiedClass, _interceptors);
 		}
-		_interceptors.putAll(method, interceptors);
 	}
 
 	protected Set<Interceptor> getInterceptorsForMethod(Method method) {

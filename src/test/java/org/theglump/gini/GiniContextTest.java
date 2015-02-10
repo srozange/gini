@@ -25,11 +25,12 @@ public class GiniContextTest {
 
 		// Assert
 		assertThat(root.getStep1()).isInstanceOf(StepImpl1.class);
-		assertThat(root.getStep1().method1()).isEqualTo("interceptor => stepImpl1");
+		assertThat(root.getStep1().method1()).isEqualTo("interceptor1 => stepImpl1");
 		assertThat(root.getStep2()).isInstanceOf(StepImpl2.class);
-		assertThat(root.getStep2().method1()).isEqualTo("interceptor => stepImpl2");
+		assertThat(root.getStep2().method1()).isEqualTo("interceptor1 => stepImpl2");
 		assertThat(root.getConcreteStep()).isInstanceOf(StepImpl1.class);
 		assertThat(root.getConcreteStep().getRule()).isInstanceOf(RuleImpl.class);
+		assertThat(root.getConcreteStep().getRule().getStr()).isEqualTo("interceptor2 => ruleImpl");
 	}
 
 	@Test
@@ -42,11 +43,12 @@ public class GiniContextTest {
 
 		// Assert
 		assertThat(root.getStep1()).isInstanceOf(StepImpl1.class);
-		assertThat(root.getStep1().method1()).isEqualTo("interceptor => stepImpl1");
+		assertThat(root.getStep1().method1()).isEqualTo("interceptor1 => stepImpl1");
 		assertThat(root.getStep2()).isInstanceOf(StepImpl2.class);
-		assertThat(root.getStep2().method1()).isEqualTo("interceptor => stepImpl2");
+		assertThat(root.getStep2().method1()).isEqualTo("interceptor1 => stepImpl2");
 		assertThat(root.getConcreteStep()).isInstanceOf(StepImpl1.class);
 		assertThat(root.getConcreteStep().getRule()).isInstanceOf(RuleImpl.class);
+		assertThat(root.getConcreteStep().getRule().getStr()).isEqualTo("interceptor2 => ruleImpl");
 	}
 
 }
