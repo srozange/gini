@@ -3,6 +3,7 @@ package org.theglump.gini;
 import static org.reflections.ReflectionUtils.getAllFields;
 import static org.reflections.ReflectionUtils.getMethods;
 import static org.reflections.ReflectionUtils.withAnnotation;
+import static org.theglump.gini.Utils.computeMethodPathes;
 import static org.theglump.gini.Utils.createProxy;
 import static org.theglump.gini.Utils.getProxifiedClass;
 import static org.theglump.gini.Utils.getPublicMethods;
@@ -23,6 +24,8 @@ import org.theglump.gini.annotation.Managed;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
 /**
@@ -119,8 +122,15 @@ public class GiniContext {
 
 			@Override
 			public boolean apply(Method method) {
-				return Utils.computeMethodPath(method).matches(joinpoint);
+				return Iterables.any(computeMethodPathes(method), new Predicate<String>() {
+
+					@Override
+					public boolean apply(String methodPath) {
+						return methodPath.matches(joinpoint);
+					}
+				});
 			}
+			
 		});
 	}
 
