@@ -8,8 +8,8 @@ import net.sf.cglib.proxy.MethodProxy;
 import com.google.common.collect.SetMultimap;
 
 /**
- * This class is used to proxify a bean It delegates the call to the related
- * advisor if method need to be advised
+ * This class is used to proxify a bean. It delegates the call to the matching
+ * interceptor.
  * 
  * @author sebastien.rozange
  * 

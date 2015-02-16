@@ -9,6 +9,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Around {
 
+	/**
+	 * Regexp matching method pathes of form : .*IStep.getStr.*
+	 * 
+	 * @return joinpoint
+	 */
 	public String joinpoint();
 
 }

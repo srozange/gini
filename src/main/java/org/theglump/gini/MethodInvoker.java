@@ -1,10 +1,10 @@
 package org.theglump.gini;
 
 /**
- * This class allow to call a method on the proxyfied object Proxified object
+ * This class allows one to call a method on the proxyfied object.
  * 
- * cannot be call directly since those call will be intercepted by
- * MethodInterceptor (endless loop)
+ * It's usefull since method call cannot be made directly on proxy as it will be
+ * endelessly intercepted.
  * 
  * @author sebastien.rozange
  * 
@@ -15,7 +15,7 @@ public interface MethodInvoker {
 	 * Invoke the advised method
 	 * 
 	 * @param args
-	 * @return
+	 * @return method call result
 	 */
 	Object invokeMethod(Object[] args);
 

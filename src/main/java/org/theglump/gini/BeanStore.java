@@ -18,7 +18,7 @@ import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
 /**
- * Store managed beans and offer convenience methods to query them
+ * Stores managed beans and offers convenience methods to query them
  * 
  * @author sebastien.rozange
  * 
@@ -45,7 +45,7 @@ class BeanStore {
 	protected <T> T getBean(Class<T> clazz) {
 		return getBean(clazz, null);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	protected <T> T getBean(Class<T> clazz, String concreteClassName) {
 		Set<Object> beans = typeToBeans.get(clazz);
@@ -77,7 +77,6 @@ class BeanStore {
 				interceptedMethods.put(proxifiedClass, _interceptors);
 			}
 			_interceptors.put(m, interceptor);
-
 		}
 	}
 
