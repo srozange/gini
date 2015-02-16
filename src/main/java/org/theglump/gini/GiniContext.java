@@ -31,14 +31,13 @@ import com.google.common.collect.Sets;
  * Gini is a simple DI Container and AOP engine : beans are singletons and
  * injection is done by type then by name.
  * 
- * Managed classes must be annotated with {@link Managed} and fields candidate
+ * Managed classes must be annotated with {@link Managed} and candidate fields
  * for injection must be annotated with {@link Inject}.
  * 
- * AOP is done by defining advices that must be annotated with @link
- * {@link Advice}.
+ * AOP is done by defining advices annotated with @link {@link Advice}.
  * 
  * An Advice contains methods annotated with {@link Around}, they are called
- * when target methods are intercepted. {@link Around}
+ * during interception of target methods.
  * 
  * @author sebastien.rozange
  * 
