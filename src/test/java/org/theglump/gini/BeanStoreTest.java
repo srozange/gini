@@ -7,6 +7,7 @@ import static org.theglump.gini.Utils.instantiate;
 import java.lang.reflect.Method;
 import java.util.Set;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.theglump.gini.bean.Advice1;
 import org.theglump.gini.bean.IStep;
@@ -18,41 +19,57 @@ import com.google.common.collect.Sets;
 
 public class BeanStoreTest {
 
-	private static final StepImpl1 STEP_IMPL_1 = new StepImpl1();
-	private static final StepImpl2 STEP_IMPL_2 = new StepImpl2();
+	private BeanStore store;
+	private Method interceptorMethod;
+	private Interceptor interceptor;
 
-	private BeanStore store = new BeanStore();
+	private static final StepImpl1 IMPL1 = new StepImpl1();
+	private static final StepImpl2 IMPL2 = new StepImpl2();
+	private static final Class<?> IMPL1_CLASS = StepImpl1.class;
+	private static final Class<?> INTERFACE = IStep.class;
 
-	@Test
-	public void should_find_bean_when_requested_with_concrete_class() {
-		store.registerBean(STEP_IMPL_1);
-
-		assertThat(store.getBean(StepImpl1.class, null)).isEqualTo(STEP_IMPL_1);
+	@Before
+	public void setup() {
+		store = new BeanStore();
+		interceptorMethod = getPublicMethods(StepImpl1.class).iterator().next();
+		interceptor = new Interceptor(instantiate(Advice1.class), interceptorMethod, ".*getRule");
 	}
 
 	@Test
-	public void should_find_bean_when_requested_with_interface() {
-		store.registerBean(STEP_IMPL_1);
+	public void should_find_bean_when_requested_by_concrete_class() {
+		store.registerBean(IMPL1);
 
-		assertThat(store.getBean(IStep.class, null)).isEqualTo(STEP_IMPL_1);
-		assertThat(store.getBean(IStep.class, "stepImpl1")).isEqualTo(STEP_IMPL_1);
+		assertThat(store.getBean(IMPL1_CLASS)).isEqualTo(IMPL1);
+	}
+
+	@Test
+	public void should_find_bean_when_requested_by_interface() {
+		store.registerBean(IMPL1);
+
+		assertThat(store.getBean(INTERFACE)).isEqualTo(IMPL1);
+	}
+
+	@Test
+	public void should_find_bean_when_several_implem_and_requested_by_interface() {
+		store.registerBean(IMPL1);
+		store.registerBean(IMPL2);
+
+		assertThat(store.getBean(INTERFACE, "stepImpl1")).isEqualTo(IMPL1);
 	}
 
 	@Test(expected = GiniException.class)
-	public void should_throw_exception_when_several_implementation_of_requested_bean() {
-		store.registerBean(STEP_IMPL_1);
-		store.registerBean(STEP_IMPL_2);
+	public void should_throw_exception_when_several_implem_and_requested_by_interface() {
+		store.registerBean(IMPL1);
+		store.registerBean(IMPL2);
 
-		assertThat(store.getBean(IStep.class, null)).isEqualTo(STEP_IMPL_2);
+		store.getBean(INTERFACE);
 	}
 
 	@Test
 	public void should_find_interceptors_for_submitted_method() {
-		Method m = getPublicMethods(Advice1.class).iterator().next();
-		final Interceptor interceptor = new Interceptor(instantiate(Advice1.class), m, ".*Class1.method1");
-		store.registerInterceptor(interceptor, Sets.newHashSet(m));
+		store.registerInterceptor(interceptor, Sets.newHashSet(interceptorMethod));
 
-		Set<Interceptor> fetchedInterceptors = store.getInterceptorsForMethod(m);
+		Set<Interceptor> fetchedInterceptors = store.getInterceptorsForMethod(interceptorMethod);
 
 		assertThat(fetchedInterceptors).isNotEmpty().hasSize(1);
 		assertThat(fetchedInterceptors.iterator().next()).isEqualTo(interceptor);
@@ -60,15 +77,13 @@ public class BeanStoreTest {
 
 	@Test
 	public void should_return_incerceptor_per_method_map_for_submitted_class() {
-		Method m = getPublicMethods(Advice1.class).iterator().next();
-		final Interceptor interceptor = new Interceptor(instantiate(Advice1.class), m, ".*Class1.method1");
-		store.registerInterceptor(interceptor, Sets.newHashSet(m));
+		store.registerInterceptor(interceptor, Sets.newHashSet(interceptorMethod));
 
-		SetMultimap<Method, Interceptor> interceptorsForMethodMap = store.getInterceptorsForMethodMap(m.getDeclaringClass());
+		SetMultimap<Method, Interceptor> interceptorsForMethodMap = store.getInterceptorsForMethodMap(StepImpl1.class);
 
 		assertThat(interceptorsForMethodMap).isNotNull();
-		assertThat(interceptorsForMethodMap.get(m)).isNotEmpty().hasSize(1);
-		assertThat(interceptorsForMethodMap.get(m).iterator().next()).isEqualTo(interceptor);
+		assertThat(interceptorsForMethodMap.get(interceptorMethod)).isNotEmpty().hasSize(1);
+		assertThat(interceptorsForMethodMap.get(interceptorMethod).iterator().next()).isEqualTo(interceptor);
 	}
 
 }

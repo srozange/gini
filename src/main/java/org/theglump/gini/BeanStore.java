@@ -42,6 +42,10 @@ class BeanStore {
 		}
 	}
 
+	protected <T> T getBean(Class<T> clazz) {
+		return getBean(clazz, null);
+	}
+	
 	@SuppressWarnings("unchecked")
 	protected <T> T getBean(Class<T> clazz, String concreteClassName) {
 		Set<Object> beans = typeToBeans.get(clazz);
