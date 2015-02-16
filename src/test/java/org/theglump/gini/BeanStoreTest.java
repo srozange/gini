@@ -20,7 +20,7 @@ import com.google.common.collect.Sets;
 public class BeanStoreTest {
 
 	private BeanStore store;
-	private Method interceptorMethod;
+	private Method interceptedMethod;
 	private Interceptor interceptor;
 
 	private static final StepImpl1 IMPL1 = new StepImpl1();
@@ -31,8 +31,8 @@ public class BeanStoreTest {
 	@Before
 	public void setup() {
 		store = new BeanStore();
-		interceptorMethod = getPublicMethods(StepImpl1.class).iterator().next();
-		interceptor = new Interceptor(instantiate(Advice1.class), interceptorMethod);
+		interceptedMethod = getPublicMethods(StepImpl1.class).iterator().next();
+		interceptor = new Interceptor(instantiate(Advice1.class), interceptedMethod);
 	}
 
 	@Test
@@ -67,9 +67,9 @@ public class BeanStoreTest {
 
 	@Test
 	public void should_find_interceptors_for_submitted_method() {
-		store.registerInterceptor(interceptor, Sets.newHashSet(interceptorMethod));
+		store.registerInterceptor(interceptor, Sets.newHashSet(interceptedMethod));
 
-		Set<Interceptor> fetchedInterceptors = store.getInterceptorsForMethod(interceptorMethod);
+		Set<Interceptor> fetchedInterceptors = store.getInterceptorsForMethod(interceptedMethod);
 
 		assertThat(fetchedInterceptors).isNotEmpty().hasSize(1);
 		assertThat(fetchedInterceptors.iterator().next()).isEqualTo(interceptor);
@@ -77,13 +77,13 @@ public class BeanStoreTest {
 
 	@Test
 	public void should_return_incerceptor_per_method_map_for_submitted_class() {
-		store.registerInterceptor(interceptor, Sets.newHashSet(interceptorMethod));
+		store.registerInterceptor(interceptor, Sets.newHashSet(interceptedMethod));
 
 		SetMultimap<Method, Interceptor> interceptorsForMethodMap = store.getInterceptorsForMethodMap(StepImpl1.class);
 
 		assertThat(interceptorsForMethodMap).isNotNull();
-		assertThat(interceptorsForMethodMap.get(interceptorMethod)).isNotEmpty().hasSize(1);
-		assertThat(interceptorsForMethodMap.get(interceptorMethod).iterator().next()).isEqualTo(interceptor);
+		assertThat(interceptorsForMethodMap.get(interceptedMethod)).isNotEmpty().hasSize(1);
+		assertThat(interceptorsForMethodMap.get(interceptedMethod).iterator().next()).isEqualTo(interceptor);
 	}
 
 }
