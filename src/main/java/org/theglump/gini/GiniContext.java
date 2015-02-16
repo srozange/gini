@@ -24,7 +24,6 @@ import org.theglump.gini.annotation.Managed;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
@@ -93,31 +92,20 @@ public class GiniContext {
 		injectDependencies(object);
 	}
 
-	@SuppressWarnings("unchecked")
 	private void instanciateInterceptors() {
-		Set<Method> candidateMethodsForInterception = getCandidateMethodsForInterception();
-		for (Class<?> clazz : reflections.getTypesAnnotatedWith(Advice.class)) {
-			Object advice = instantiate(clazz);
-			for (Method method : getMethods(clazz, withAnnotation(Around.class))) {
-				final Around around = method.getAnnotation(Around.class);
-				Set<Method> methodsToBeIntercepted = getMethodsToBeIntercepted(candidateMethodsForInterception, around.joinpoint());
-				if (methodsToBeIntercepted.size() > 0) {
-					Interceptor interceptor = new Interceptor(advice, method, around.joinpoint());
-					store.registerInterceptor(interceptor, methodsToBeIntercepted);
+		Set<Method> publicManagedMethods = getManagedPublicMethods();
+		for (Class<?> clazz : getAdviceClasses()) {
+			Object adviceInstance = instantiate(clazz);
+			for (Method aroundMethod : getAroundMethods(clazz)) {
+				Set<Method> matchingMethods = getMatchingMethods(getJointpoint(aroundMethod), publicManagedMethods);
+				if (matchingMethods.size() > 0) {
+					store.registerInterceptor(new Interceptor(adviceInstance, aroundMethod), matchingMethods);
 				}
 			}
 		}
 	}
 
-	private Set<Method> getCandidateMethodsForInterception() {
-		Set<Method> methods = Sets.newHashSet();
-		for (Class<?> clazz : reflections.getTypesAnnotatedWith(Managed.class)) {
-			methods.addAll(getPublicMethods(clazz));
-		}
-		return methods;
-	}
-
-	private Set<Method> getMethodsToBeIntercepted(Set<Method> candidateMethodsForInterception, final String joinpoint) {
+	private Set<Method> getMatchingMethods(final String joinpoint, Set<Method> candidateMethodsForInterception) {
 		return Sets.filter(candidateMethodsForInterception, new Predicate<Method>() {
 
 			@Override
@@ -130,7 +118,7 @@ public class GiniContext {
 					}
 				});
 			}
-			
+
 		});
 	}
 
@@ -157,6 +145,27 @@ public class GiniContext {
 			Object dependency = store.getBean(field.getType(), field.getName());
 			injectField(bean, field, dependency);
 		}
+	}
+
+	private Set<Class<?>> getAdviceClasses() {
+		return reflections.getTypesAnnotatedWith(Advice.class);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Set<Method> getAroundMethods(Class<?> clazz) {
+		return getMethods(clazz, withAnnotation(Around.class));
+	}
+
+	private String getJointpoint(Method aroundMethod) {
+		return aroundMethod.getAnnotation(Around.class).joinpoint();
+	}
+
+	private Set<Method> getManagedPublicMethods() {
+		Set<Method> methods = Sets.newHashSet();
+		for (Class<?> clazz : reflections.getTypesAnnotatedWith(Managed.class)) {
+			methods.addAll(getPublicMethods(clazz));
+		}
+		return methods;
 	}
 
 }

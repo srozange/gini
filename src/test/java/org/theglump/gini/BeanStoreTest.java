@@ -32,7 +32,7 @@ public class BeanStoreTest {
 	public void setup() {
 		store = new BeanStore();
 		interceptorMethod = getPublicMethods(StepImpl1.class).iterator().next();
-		interceptor = new Interceptor(instantiate(Advice1.class), interceptorMethod, ".*getRule");
+		interceptor = new Interceptor(instantiate(Advice1.class), interceptorMethod);
 	}
 
 	@Test

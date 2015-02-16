@@ -8,8 +8,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Set;
 
-import org.reflections.ReflectionUtils;
-
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 
@@ -59,7 +57,7 @@ public class Utils {
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(clazz);
 		enhancer.setCallback(methodInterceptor);
-		return (T)enhancer.create();
+		return (T) enhancer.create();
 	}
 
 	@SuppressWarnings("unchecked")
