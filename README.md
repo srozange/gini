@@ -63,7 +63,7 @@ public class Root {
 ###  Let's try it out
 
 ```java
-GiniContext ctx = new GiniContext("org.theglump.gini.bean");
+GiniContext ctx = new GiniContext("org.theglump.gini.example");
 Root root = ctx.getBean(Root.class);
 
 System.out.println(root.getStep1().getImplemName());
@@ -95,7 +95,7 @@ public class Advice {
 ###  Let's try it out
 
 ```java
-GiniContext ctx = new GiniContext("org.theglump.gini.bean");
+GiniContext ctx = new GiniContext("org.theglump.gini.example");
 Root root = ctx.getBean(Root.class);
 
 System.out.println(root.getStep1().getImplemName());
