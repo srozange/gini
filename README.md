@@ -3,7 +3,7 @@ Gini is an ultra light dependency injection and AOP engine I developped for lear
 
 Beans managed by Gini are singletons only, they are injected by type, then by field name if several candidates for injection are found.
 
-AOP allows method call interceptions. In order to do so, Gini uses [CGLib](https://github.com/cglib/cglib) to create dynamic proxies.
+AOP allows to intercept method calls on managed beans. In order to do so, Gini uses [CGLib](https://github.com/cglib/cglib) to create dynamic proxies.
 
 ###  Interface IStep
 ```java
@@ -17,7 +17,7 @@ public interface IStep {
 ```
 ###  Class StepImpl1
 
-We use the @Managed annotation to declare it as a bean managed by Gini.
+We use the @Managed annotation to declare bean as managed by Gini.
 
 ```java
 package org.theglump.gini.bean;
@@ -49,7 +49,7 @@ public class StepImpl2 implements IStep {
 
 ###  Injected class
 
-Fields needing injection must be annotated with the @Inject annotation.
+Fields in need for injection must be annotated with the @Inject annotation.
 
 ```java
 package org.theglump.gini.bean;
@@ -85,9 +85,9 @@ System.out.println(root.getStep2().getImplemName());
 
 ###  Advice
 
-An advice must be annotated with the @Advice annotation, it contains interception methods annotated with the @Around annotation.
+An advice must be annotated with the @Advice annotation, it's composed of methods annotated with the @Around annotation, those are executed during method interceptions.
 
-Target methods are defined with a joinpoint (field of the @Around annotation). A joinpoint is a regexp with the following formalism : *package.class.method*.
+Target methods are defined with a joinpoint (property of the @Around annotation). A joinpoint is a regular expression matching method patterns of form *package.class.method*.
 
 ```java
 package org.theglump.gini.bean;
