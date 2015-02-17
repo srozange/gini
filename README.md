@@ -55,8 +55,13 @@ public class Root {
 	@Inject
 	private IStep stepImpl2;
 	
-	public IStep getStep1()  {...}
-	public IStep getStep2()  {...}
+	public IStep getStep1()  {
+		return stepImpl1;
+	}
+	
+	public IStep getStep2()  {
+		return stepImpl2;
+	}
 }
 ```
 
