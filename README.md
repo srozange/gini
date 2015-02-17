@@ -87,7 +87,7 @@ System.out.println(root.getStep2().getImplemName());
 
 An advice must be annotated with the @Advice annotation, it contains interception methods annotated with the @Around annotation.
 
-Intercepted method are targeted by joinpoints defined in the @Around annotation, joinpoints are regexp matching method pathes of form *package.class.method*.
+Target methods are defined with a joinpoint (field of the @Around annotation). A joinpoint is a regexp targeting method ids with form *package.class.method*.
 
 ```java
 package org.theglump.gini.bean;
