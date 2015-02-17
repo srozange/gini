@@ -1,5 +1,5 @@
 # gini
-Gini is an ultra light dependency injection and AOP engine I developped for learning purpose.
+Gini is an ultra light dependency injection and AOP engine.
 
 Beans managed by Gini are singletons only, they are injected by type, then by field name if several candidates for injection are found.
 
