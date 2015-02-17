@@ -71,12 +71,12 @@ public class Utils {
 	}
 
 	protected static Class<?> getProxifiedClass(Class<?> clazz) {
-		return clazz.getCanonicalName().contains("CGLIB") ? clazz.getSuperclass() : clazz;
+		return clazz.getName().contains("CGLIB") ? clazz.getSuperclass() : clazz;
 	}
 
 	protected static Set<String> computeMethodPathes(Method method) {
 		Set<String> methodPathes = Sets.newHashSet();
-		methodPathes.add(method.getName() + "." + method.getName());
+		methodPathes.add(method.getDeclaringClass().getName() + "." + method.getName());
 		for (Class<?> clazz : getAllSuperTypes(method.getDeclaringClass())) {
 			methodPathes.add(clazz.getName() + "." + method.getName());
 		}
