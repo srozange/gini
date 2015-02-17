@@ -7,8 +7,6 @@ AOP allows to intercept method calls on managed beans. In order to do so, Gini u
 
 ###  Interface IStep
 ```java
-package org.theglump.gini.bean;
-
 public interface IStep {
 
 	String getImplemName();
@@ -20,8 +18,6 @@ public interface IStep {
 We use the @Managed annotation to declare bean as managed by Gini.
 
 ```java
-package org.theglump.gini.bean;
-
 @Managed
 public class StepImpl1 implements IStep {
 
@@ -35,8 +31,6 @@ public class StepImpl1 implements IStep {
 ###  Class StepImpl2
 
 ```java
-package org.theglump.gini.bean;
-
 @Managed
 public class StepImpl2 implements IStep {
 
@@ -52,8 +46,6 @@ public class StepImpl2 implements IStep {
 Fields in need for injection must be annotated with the @Inject annotation.
 
 ```java
-package org.theglump.gini.bean;
-
 @Managed
 public class Root {
 	
@@ -90,8 +82,6 @@ An advice must be annotated with the @Advice annotation, it's composed of method
 Target methods are defined with a joinpoint (property of the @Around annotation). A joinpoint is a regular expression matching method patterns of form *package.class.method*.
 
 ```java
-package org.theglump.gini.bean;
-
 @Advice
 public class Advice {
 
