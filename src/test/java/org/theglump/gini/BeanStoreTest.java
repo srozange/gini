@@ -23,8 +23,8 @@ public class BeanStoreTest {
 	private Method interceptedMethod;
 	private Interceptor interceptor;
 
-	private static final StepImpl1 IMPL1 = new StepImpl1();
-	private static final StepImpl2 IMPL2 = new StepImpl2();
+	private static final IStep IMPL1 = new StepImpl1();
+	private static final IStep IMPL2 = new StepImpl2();
 	private static final Class<?> IMPL1_CLASS = StepImpl1.class;
 	private static final Class<?> INTERFACE = IStep.class;
 
