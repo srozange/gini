@@ -105,6 +105,9 @@ public class Advice {
 ###  Let's try it out
 
 ```java
+GiniContext ctx = new GiniContext("org.theglump.gini.bean");
+Root root = ctx.getBean(Root.class);
+
 System.out.println(root.getStep1().getImplemName());
 >> intercepted => stepImpl1
 
