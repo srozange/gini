@@ -45,7 +45,7 @@ public class FooImpl2 implements IFoo {
 }
 ```
 
-###  Injected class
+###  Injection
 
 Fields in need for injection must be annotated with the @Inject annotation.
 
