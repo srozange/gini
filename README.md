@@ -1,7 +1,5 @@
 # Gini
 
-*Disclaimer : This library is not ready for production*
-
 Gini is an ultra light dependency injection and AOP engine.
 
 Beans managed by Gini are singletons only, they are injected by type, then by field name if several candidates for injection are found.
@@ -88,7 +86,7 @@ System.out.println(root.getFoo2().getImplemName());
 
 ###  Advice
 
-Code executed during method interception is defined in methods annotated with the @Around annotations. Those methodes are contained in classes annotated with the @advice annotation.
+Code executed during method interception is defined in methods annotated with the @Around annotations. Those methods are contained in classes annotated with the @advice annotation.
 
 Target methods are defined with a joinpoint (property of the @Around annotation). A joinpoint is a regular expression matching method patterns of form *package.class.method*.
 
