@@ -1,4 +1,7 @@
 # Gini
+
+*Disclaimer : This library is not ready for production*
+
 Gini is an ultra light dependency injection and AOP engine.
 
 Beans managed by Gini are singletons only, they are injected by type, then by field name if several candidates for injection are found.
@@ -7,7 +10,7 @@ Gini allows to intercept method calls on managed beans (AOP). In order to do so,
 
 ## Dependency injection example
 
-###  Interface IFoo
+###  IFoo.java
 
 ```java
 public interface IFoo {
@@ -16,7 +19,7 @@ public interface IFoo {
 
 }
 ```
-###  Class FooImpl1
+###  FooImpl1.java
 
 We use the @Managed annotation to declare bean as managed by Gini.
 
@@ -31,7 +34,7 @@ public class FooImpl1 implements IFoo {
 }
 ```
 
-###  Class FooImpl2
+###  FooImpl2.java
 
 ```java
 @Managed
