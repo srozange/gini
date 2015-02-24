@@ -3,40 +3,43 @@ Gini is an ultra light dependency injection and AOP engine.
 
 Beans managed by Gini are singletons only, they are injected by type, then by field name if several candidates for injection are found.
 
-AOP allows to intercept method calls on managed beans. In order to do so, Gini uses [CGLib](https://github.com/cglib/cglib) to create dynamic proxies.
+Gini allows to intercept method calls on managed beans (AOP). In order to do so, Gini uses [CGLib](https://github.com/cglib/cglib) to create dynamic proxies.
 
-###  Interface IStep
+## Dependency injection example
+
+###  Interface IFoo
+
 ```java
-public interface IStep {
+public interface IFoo {
 
 	String getImplemName();
 
 }
 ```
-###  Class StepImpl1
+###  Class FooImpl1
 
 We use the @Managed annotation to declare bean as managed by Gini.
 
 ```java
 @Managed
-public class StepImpl1 implements IStep {
+public class FooImpl1 implements IFoo {
 
 	@Override
 	public String getImplemName() {
-		return "stepImpl1";
+		return "fooImpl1";
 	}
 }
 ```
 
-###  Class StepImpl2
+###  Class FooImpl2
 
 ```java
 @Managed
-public class StepImpl2 implements IStep {
+public class FooImpl2 implements IFoo {
 
 	@Override
 	public String getImplemName() {
-		return "stepImpl2";
+		return "fooImpl2";
 	}
 }
 ```
@@ -50,17 +53,17 @@ Fields in need for injection must be annotated with the @Inject annotation.
 public class Root {
 	
 	@Inject
-	private IStep stepImpl1;
+	private IFoo fooImpl1;
 	
 	@Inject
-	private IStep stepImpl2;
+	private IFoo fooImpl2;
 	
-	public IStep getStep1()  {
-		return stepImpl1;
+	public IFoo getFoo1()  {
+		return fooImpl1;
 	}
 	
-	public IStep getStep2()  {
-		return stepImpl2;
+	public IFoo getFoo2()  {
+		return fooImpl2;
 	}
 }
 ```
@@ -71,18 +74,18 @@ public class Root {
 GiniContext ctx = new GiniContext("org.theglump.gini.example");
 Root root = ctx.getBean(Root.class);
 
-System.out.println(root.getStep1().getImplemName());
->> stepImpl1
+System.out.println(root.getFoo1().getImplemName());
+>> fooImpl1
 
-System.out.println(root.getStep2().getImplemName());
->> stepImpl2
+System.out.println(root.getFoo2().getImplemName());
+>> fooImpl2
 ```
 
 ## AOP example
 
 ###  Advice
 
-An advice must be annotated with the @Advice annotation, it's composed of methods annotated with the @Around annotation, those are executed during method interceptions.
+Code executed during method interception is defined in methods annotated with the @Around annotations. Those methodes are contained in classes annotated with the @advice annotation.
 
 Target methods are defined with a joinpoint (property of the @Around annotation). A joinpoint is a regular expression matching method patterns of form *package.class.method*.
 
@@ -90,7 +93,7 @@ Target methods are defined with a joinpoint (property of the @Around annotation)
 @Advice
 public class Advice {
 
-	@Around(joinpoint = ".*IStep.getImplemName")
+	@Around(joinpoint = ".*IFoo.getImplemName")
 	public String intercept(Object bean, Method method, Object[] args, MethodInvoker methodInvoker) {
 		return "intercepted => " + methodInvoker.invokeMethod(args);
 	}
@@ -103,9 +106,9 @@ public class Advice {
 GiniContext ctx = new GiniContext("org.theglump.gini.example");
 Root root = ctx.getBean(Root.class);
 
-System.out.println(root.getStep1().getImplemName());
->> intercepted => stepImpl1
+System.out.println(root.getFoo1().getImplemName());
+>> intercepted => fooImpl1
 
-System.out.println(root.getStep2().getImplemName());
->> intercepted => stepImpl2
+System.out.println(root.getFoo2().getImplemName());
+>> intercepted => fooImpl2
 ```
