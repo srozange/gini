@@ -1,6 +1,6 @@
 package org.theglump.gini.bean;
 
-public interface IStep {
+public interface Step {
 
 	String implemName();
 

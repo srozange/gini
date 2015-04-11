@@ -4,12 +4,12 @@ import org.theglump.gini.annotation.Inject;
 import org.theglump.gini.annotation.Managed;
 
 @Managed
-public class StepImpl1 implements IStep {
+public class StepImpl1 implements Step {
 
 	@Inject
-	private IRule rule;
+	private Rule rule;
 
-	public IRule getRule() {
+	public Rule getRule() {
 		return rule;
 	}
 

@@ -2,16 +2,18 @@
 
 Gini is an ultra light dependency injection and AOP engine.
 
+*Note : This project is just a POC i'm working on to learn IOC.*
+
 Beans managed by Gini are singletons only, they are injected by type, then by field name if several candidates for injection are found.
 
 Gini allows to intercept method calls on managed beans (AOP). In order to do so, Gini uses [CGLib](https://github.com/cglib/cglib) to create dynamic proxies.
 
 ## Dependency injection example
 
-###  IFoo.java
+###  Foo.java
 
 ```java
-public interface IFoo {
+public interface Foo {
 
 	String getImplemName();
 
@@ -23,7 +25,7 @@ We use the @Managed annotation to declare bean as managed by Gini.
 
 ```java
 @Managed
-public class FooImpl1 implements IFoo {
+public class FooImpl1 implements Foo {
 
 	@Override
 	public String getImplemName() {
@@ -36,7 +38,7 @@ public class FooImpl1 implements IFoo {
 
 ```java
 @Managed
-public class FooImpl2 implements IFoo {
+public class FooImpl2 implements Foo {
 
 	@Override
 	public String getImplemName() {
@@ -54,16 +56,16 @@ Fields in need for injection must be annotated with the @Inject annotation.
 public class Root {
 	
 	@Inject
-	private IFoo fooImpl1;
+	private Foo fooImpl1;
 	
 	@Inject
-	private IFoo fooImpl2;
+	private Foo fooImpl2;
 	
-	public IFoo getFoo1()  {
+	public Foo getFoo1()  {
 		return fooImpl1;
 	}
 	
-	public IFoo getFoo2()  {
+	public Foo getFoo2()  {
 		return fooImpl2;
 	}
 }
@@ -94,7 +96,7 @@ Target methods are defined with a joinpoint (property of the @Around annotation)
 @Advice
 public class Advice {
 
-	@Around(joinpoint = ".*IFoo.getImplemName")
+	@Around(joinpoint = ".Foo.getImplemName")
 	public String intercept(Object bean, Method method, Object[] args, MethodInvoker methodInvoker) {
 		return "intercepted => " + methodInvoker.invokeMethod(args);
 	}

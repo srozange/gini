@@ -1,6 +1,6 @@
 package org.theglump.gini.bean;
 
-public interface IRule {
+public interface Rule {
 
 	String getRuleName();
 

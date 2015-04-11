@@ -14,7 +14,7 @@ public class Advice1 {
 		return "interceptor1 => " + methodInvoker.invokeMethod(args);
 	}
 
-	@Around(joinpoint = ".*IRule.getRuleName")
+	@Around(joinpoint = ".*Rule.getRuleName")
 	public String intercept2(Object bean, Method method, Object[] args, MethodInvoker methodInvoker) {
 		return "interceptor2 => " + methodInvoker.invokeMethod(args);
 	}

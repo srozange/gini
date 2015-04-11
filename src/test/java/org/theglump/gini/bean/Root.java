@@ -7,19 +7,19 @@ import org.theglump.gini.annotation.Managed;
 public class Root {
 	
 	@Inject
-	private IStep stepImpl1;
+	private Step stepImpl1;
 	
 	@Inject
-	private IStep stepImpl2;
+	private Step stepImpl2;
 	
 	@Inject
 	private StepImpl1 concreteStep;
 
-	public IStep getStep1() {
+	public Step getStep1() {
 		return stepImpl1;
 	}
 
-	public IStep getStep2() {
+	public Step getStep2() {
 		return stepImpl2;
 	}
 

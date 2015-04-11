@@ -10,7 +10,7 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.theglump.gini.bean.Advice1;
-import org.theglump.gini.bean.IStep;
+import org.theglump.gini.bean.Step;
 import org.theglump.gini.bean.StepImpl1;
 import org.theglump.gini.bean.StepImpl2;
 
@@ -23,10 +23,10 @@ public class BeanStoreTest {
 	private Method interceptedMethod;
 	private Interceptor interceptor;
 
-	private static final IStep IMPL1 = new StepImpl1();
-	private static final IStep IMPL2 = new StepImpl2();
+	private static final Step IMPL1 = new StepImpl1();
+	private static final Step IMPL2 = new StepImpl2();
 	private static final Class<?> IMPL1_CLASS = StepImpl1.class;
-	private static final Class<?> INTERFACE = IStep.class;
+	private static final Class<?> INTERFACE = Step.class;
 
 	@Before
 	public void setup() {
