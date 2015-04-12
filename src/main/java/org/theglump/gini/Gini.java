@@ -2,7 +2,6 @@ package org.theglump.gini;
 
 import static org.reflections.ReflectionUtils.getAllFields;
 import static org.reflections.ReflectionUtils.withAnnotation;
-import static org.theglump.gini.Reflections.createProxy;
 import static org.theglump.gini.Reflections.getProxifiedClass;
 import static org.theglump.gini.Reflections.injectField;
 import static org.theglump.gini.Reflections.instantiate;
@@ -58,7 +57,7 @@ public class Gini {
 
 		registerInterceptors();
 		registerBeans();
-		injectDependencies();
+		inject();
 	}
 
 	/**
@@ -93,6 +92,10 @@ public class Gini {
 		}
 	}
 
+	private Set<Field> getInjectFields(Object bean) {
+		return getAllFields(getProxifiedClass(bean.getClass()), withAnnotation(Inject.class));
+	}
+
 	private void registerInterceptors() {
 		Set<Interceptor> interceptors = interceptorHelper.computeInterceptors();
 		store.registerInterceptors(interceptors);
@@ -115,14 +118,10 @@ public class Gini {
 		return org.theglump.gini.Reflections.createProxy(clazz, new MethodInterceptor(interceptorsPerMethod));
 	}
 
-	private void injectDependencies() {
+	private void inject() {
 		for (Object bean : store.getBeans()) {
 			inject(bean);
 		}
-	}
-
-	private Set<Field> getInjectFields(Object bean) {
-		return getAllFields(getProxifiedClass(bean.getClass()), withAnnotation(Inject.class));
 	}
 
 }
