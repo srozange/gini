@@ -69,7 +69,7 @@ public class Root {
 }
 ```
 
-###  Let's try it out
+###  Test
 
 ```java
 Gini ctx = new Gini("org.theglump.gini.example");
@@ -101,7 +101,7 @@ public class Advice {
 }
 ```
 
-###  Let's try it out
+###  Test
 
 ```java
 Gini ctx = new Gini("org.theglump.gini.example");
