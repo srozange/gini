@@ -1,8 +1,8 @@
 package org.theglump.gini;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.theglump.gini.Utils.getPublicMethods;
-import static org.theglump.gini.Utils.instantiate;
+import static org.theglump.gini.Reflections.getPublicMethods;
+import static org.theglump.gini.Reflections.instantiate;
 
 import java.lang.reflect.Method;
 import java.util.Set;
@@ -32,7 +32,7 @@ public class BeanStoreTest {
 	public void setup() {
 		store = new BeanStore();
 		interceptedMethod = getPublicMethods(StepImpl1.class).iterator().next();
-		interceptor = new Interceptor(instantiate(Advice1.class), interceptedMethod);
+		interceptor = new Interceptor(instantiate(Advice1.class), getPublicMethods(Advice1.class).iterator().next(), Sets.newHashSet(interceptedMethod));
 	}
 
 	@Test
@@ -67,7 +67,7 @@ public class BeanStoreTest {
 
 	@Test
 	public void should_find_interceptors_for_submitted_method() {
-		store.registerInterceptor(interceptor, Sets.newHashSet(interceptedMethod));
+		store.registerInterceptor(interceptor);
 
 		Set<Interceptor> fetchedInterceptors = store.getInterceptorsForMethod(interceptedMethod);
 
@@ -77,9 +77,9 @@ public class BeanStoreTest {
 
 	@Test
 	public void should_return_incerceptor_per_method_map_for_submitted_class() {
-		store.registerInterceptor(interceptor, Sets.newHashSet(interceptedMethod));
+		store.registerInterceptor(interceptor);
 
-		SetMultimap<Method, Interceptor> interceptorsForMethodMap = store.getInterceptorsForMethodMap(StepImpl1.class);
+		SetMultimap<Method, Interceptor> interceptorsForMethodMap = store.getInterceptorsPerMethod(StepImpl1.class);
 
 		assertThat(interceptorsForMethodMap).isNotNull();
 		assertThat(interceptorsForMethodMap.get(interceptedMethod)).isNotEmpty().hasSize(1);

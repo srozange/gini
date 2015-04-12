@@ -1,14 +1,11 @@
 package org.theglump.gini;
 
 import static org.reflections.ReflectionUtils.getAllFields;
-import static org.reflections.ReflectionUtils.getMethods;
 import static org.reflections.ReflectionUtils.withAnnotation;
-import static org.theglump.gini.Utils.computeMethodPathes;
-import static org.theglump.gini.Utils.createProxy;
-import static org.theglump.gini.Utils.getProxifiedClass;
-import static org.theglump.gini.Utils.getPublicMethods;
-import static org.theglump.gini.Utils.injectField;
-import static org.theglump.gini.Utils.instantiate;
+import static org.theglump.gini.Reflections.createProxy;
+import static org.theglump.gini.Reflections.getProxifiedClass;
+import static org.theglump.gini.Reflections.injectField;
+import static org.theglump.gini.Reflections.instantiate;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -16,6 +13,7 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
+import com.google.common.collect.SetMultimap;
 import org.reflections.Reflections;
 import org.theglump.gini.annotation.Advice;
 import org.theglump.gini.annotation.Around;
@@ -23,9 +21,6 @@ import org.theglump.gini.annotation.Inject;
 import org.theglump.gini.annotation.Managed;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 
 /**
  * Gini is a simple DI Container and AOP engine : beans are singletons and
@@ -46,29 +41,32 @@ public class GiniContext {
 
 	private final BeanStore store;
 	private final Reflections reflections;
+	private final InterceptorHelper interceptorHelper;
 
 	/**
 	 * Initialize a new context by scanning all classes and sub-classes of the
 	 * given package
-	 * 
+	 *
 	 * @param packageName
 	 */
 	public GiniContext(String packageName) {
 		Preconditions.checkNotNull(packageName);
-		this.reflections = new Reflections(packageName);
-		this.store = new BeanStore();
 
-		instanciateInterceptors();
-		instanciateBeans();
+		this.store = new BeanStore();
+		this.reflections = new Reflections(packageName);
+		this.interceptorHelper = new InterceptorHelper(packageName);
+
+		registerInterceptors();
+		registerBeans();
 		injectDependencies();
 	}
 
 	/**
 	 * Returns the managed bean corresponding to the given class
-	 * 
+	 *
 	 * If given class is an interface and 2 or more implementations exist,
 	 * injection is done matching field name and class name
-	 * 
+	 *
 	 * @param clazz
 	 *            The class of searched bean
 	 * @return The corresponding managed bean
@@ -91,45 +89,27 @@ public class GiniContext {
 		injectDependencies(object);
 	}
 
-	private void instanciateInterceptors() {
-		Set<Method> publicManagedMethods = getManagedPublicMethods();
-		for (Class<?> clazz : getAdviceClasses()) {
-			Object adviceInstance = instantiate(clazz);
-			for (Method aroundMethod : getAroundMethods(clazz)) {
-				Set<Method> matchingMethods = getMatchingMethods(getJointpoint(aroundMethod), publicManagedMethods);
-				if (matchingMethods.size() > 0) {
-					store.registerInterceptor(new Interceptor(adviceInstance, aroundMethod), matchingMethods);
-				}
-			}
-		}
+	private void registerInterceptors() {
+		Set<Interceptor> interceptors = interceptorHelper.computeInterceptors();
+		store.registerInterceptors(interceptors);
 	}
 
-	private Set<Method> getMatchingMethods(final String joinpoint, Set<Method> candidateMethodsForInterception) {
-		return Sets.filter(candidateMethodsForInterception, new Predicate<Method>() {
-
-			@Override
-			public boolean apply(Method method) {
-				return Iterables.any(computeMethodPathes(method), new Predicate<String>() {
-
-					@Override
-					public boolean apply(String methodPath) {
-						return methodPath.matches(joinpoint);
-					}
-				});
-			}
-
-		});
-	}
-
-	private void instanciateBeans() {
+	private void registerBeans() {
 		for (Class<?> clazz : reflections.getTypesAnnotatedWith(Managed.class)) {
+			Object bean;
 			if (store.hasInterceptors(clazz)) {
-				MethodInterceptor methodInterceptor = new MethodInterceptor(store.getInterceptorsForMethodMap(clazz));
-				store.registerBean(createProxy(clazz, methodInterceptor));
+				bean = createProxy(clazz);
 			} else {
-				store.registerBean(instantiate(clazz));
+				bean = instantiate(clazz);
 			}
+			store.registerBean(bean);
 		}
+	}
+
+	private Object createProxy(Class<?> clazz) {
+		SetMultimap<Method, Interceptor> interceptorsPerMethod = store.getInterceptorsPerMethod(clazz);
+		MethodInterceptor methodInterceptor = new MethodInterceptor(interceptorsPerMethod);
+		return org.theglump.gini.Reflections.createProxy(clazz, methodInterceptor);
 	}
 
 	private void injectDependencies() {
@@ -145,26 +125,4 @@ public class GiniContext {
 			injectField(bean, field, dependency);
 		}
 	}
-
-	private Set<Class<?>> getAdviceClasses() {
-		return reflections.getTypesAnnotatedWith(Advice.class);
-	}
-
-	@SuppressWarnings("unchecked")
-	private Set<Method> getAroundMethods(Class<?> clazz) {
-		return getMethods(clazz, withAnnotation(Around.class));
-	}
-
-	private String getJointpoint(Method aroundMethod) {
-		return aroundMethod.getAnnotation(Around.class).joinpoint();
-	}
-
-	private Set<Method> getManagedPublicMethods() {
-		Set<Method> methods = Sets.newHashSet();
-		for (Class<?> clazz : reflections.getTypesAnnotatedWith(Managed.class)) {
-			methods.addAll(getPublicMethods(clazz));
-		}
-		return methods;
-	}
-
 }

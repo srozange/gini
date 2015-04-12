@@ -2,9 +2,7 @@
 
 Gini is an ultra light dependency injection and AOP engine.
 
-*Note : This project is just a POC i'm working on to learn IOC.*
-
-Beans managed by Gini are singletons only, they are injected by type, then by field name if several candidates for injection are found.
+Beans managed by Gini are singletons, they are injected by type, then by field name if several candidates for injection are found.
 
 Gini allows to intercept method calls on managed beans (AOP). In order to do so, Gini uses [CGLib](https://github.com/cglib/cglib) to create dynamic proxies.
 
@@ -77,10 +75,10 @@ public class Root {
 GiniContext ctx = new GiniContext("org.theglump.gini.example");
 Root root = ctx.getBean(Root.class);
 
-System.out.println(root.getFoo1().getImplemName());
+println(root.getFoo1().getImplemName());
 >> fooImpl1
 
-System.out.println(root.getFoo2().getImplemName());
+println(root.getFoo2().getImplemName());
 >> fooImpl2
 ```
 
@@ -88,9 +86,9 @@ System.out.println(root.getFoo2().getImplemName());
 
 ###  Advice
 
-Code executed during method interception is defined in methods annotated with the @Around annotations. Those methods are contained in classes annotated with the @advice annotation.
+AOP allows to intercept method calls in order to execute specific code.
 
-Target methods are defined with a joinpoint (property of the @Around annotation). A joinpoint is a regular expression matching method patterns of form *package.class.method*.
+Code to be executed must be defined in methods annotated with the @Arround annotation. An @Around annotation contains a joinpoint field that defines with methods will be intercepted, it consists in a regular expression matching method patterns of form *package.class.method*.
 
 ```java
 @Advice
@@ -109,9 +107,9 @@ public class Advice {
 GiniContext ctx = new GiniContext("org.theglump.gini.example");
 Root root = ctx.getBean(Root.class);
 
-System.out.println(root.getFoo1().getImplemName());
+println(root.getFoo1().getImplemName());
 >> intercepted => fooImpl1
 
-System.out.println(root.getFoo2().getImplemName());
+println(root.getFoo2().getImplemName());
 >> intercepted => fooImpl2
 ```

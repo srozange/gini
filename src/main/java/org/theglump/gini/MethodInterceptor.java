@@ -29,7 +29,7 @@ class MethodInterceptor implements net.sf.cglib.proxy.MethodInterceptor {
 		if (interceptors.size() > 0) {
 			Interceptor interceptor = interceptors.iterator().next();
 			Object[] adviceArguments = new Object[] { bean, method, args, new MethodInvokerImpl(proxy, bean) };
-			return interceptor.method.invoke(interceptor.advice, adviceArguments);
+			return interceptor.getMethod().invoke(interceptor.getAdvice(), adviceArguments);
 		}
 
 		return proxy.invokeSuper(bean, args);

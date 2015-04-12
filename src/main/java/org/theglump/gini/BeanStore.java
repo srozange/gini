@@ -1,13 +1,10 @@
 package org.theglump.gini;
 
 import static org.reflections.ReflectionUtils.getAllSuperTypes;
-import static org.theglump.gini.Utils.getProxifiedClass;
+import static org.theglump.gini.Reflections.getProxifiedClass;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.Nonnull;
 
@@ -21,7 +18,7 @@ import com.google.common.collect.Sets;
  * Stores managed beans and offers convenience methods to query them
  * 
  * @author sebastien.rozange
- * 
+ *
  */
 class BeanStore {
 
@@ -67,9 +64,9 @@ class BeanStore {
 		return Collections.unmodifiableSet(beans);
 	}
 
-	protected void registerInterceptor(Interceptor interceptor, Set<Method> methods) {
+	protected void registerInterceptor(Interceptor interceptor) {
 		interceptors.add(interceptor);
-		for (Method m : methods) {
+		for (Method m : interceptor.getInterceptedMethods()) {
 			Class<?> proxifiedClass = getProxifiedClass(m.getDeclaringClass());
 			SetMultimap<Method, Interceptor> _interceptors = interceptedMethods.get(proxifiedClass);
 			if (_interceptors == null) {
@@ -77,6 +74,12 @@ class BeanStore {
 				interceptedMethods.put(proxifiedClass, _interceptors);
 			}
 			_interceptors.put(m, interceptor);
+		}
+	}
+
+	protected void registerInterceptors(Set<Interceptor> interceptors) {
+		for (Interceptor interceptor : interceptors) {
+			registerInterceptor(interceptor);
 		}
 	}
 
@@ -91,7 +94,7 @@ class BeanStore {
 	}
 
 	@Nonnull
-	protected SetMultimap<Method, Interceptor> getInterceptorsForMethodMap(Class<?> clazz) {
+	protected SetMultimap<Method, Interceptor> getInterceptorsPerMethod(Class<?> clazz) {
 		Class<?> proxifiedClass = getProxifiedClass(clazz);
 		if (interceptedMethods.containsKey(proxifiedClass)) {
 			return ImmutableSetMultimap.copyOf(interceptedMethods.get(proxifiedClass));
@@ -104,7 +107,7 @@ class BeanStore {
 	}
 
 	private boolean canInjectByName(String fieldName, Object bean) {
-		return Utils.className(getProxifiedClass(bean.getClass())).equalsIgnoreCase(fieldName);
+		return Reflections.className(getProxifiedClass(bean.getClass())).equalsIgnoreCase(fieldName);
 	}
 
 }
