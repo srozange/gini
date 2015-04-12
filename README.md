@@ -69,7 +69,7 @@ public class Root {
 }
 ```
 
-###  Let's try it out
+###  Test
 
 ```java
 Gini ctx = new Gini("org.theglump.gini.example");
@@ -94,14 +94,14 @@ Code to be executed must be defined in methods annotated with the @Arround annot
 @Advice
 public class Advice {
 
-	@Around(joinpoint = ".Foo.getImplemName")
+	@Around(joinpoint = "*.Foo.getImplemName")
 	public String intercept(Object bean, Method method, Object[] args, MethodInvoker methodInvoker) {
 		return "intercepted => " + methodInvoker.invokeMethod(args);
 	}
 }
 ```
 
-###  Let's try it out
+###  Test
 
 ```java
 Gini ctx = new Gini("org.theglump.gini.example");
