@@ -81,12 +81,16 @@ public class Gini {
 	 * Injects managed bean in provided object (via fields annotated
 	 * {@link Inject})
 	 * 
-	 * @param object
+	 * @param bean
 	 *            to perform injection on
 	 */
-	public void inject(Object object) {
-		Preconditions.checkNotNull(object);
-		injectDependencies(object);
+	public void inject(Object bean) {
+		Preconditions.checkNotNull(bean);
+
+		for (Field field : getInjectFields(bean)) {
+			Object dependency = store.getBean(field.getType(), field.getName());
+			injectField(bean, field, dependency);
+		}
 	}
 
 	private void registerInterceptors() {
@@ -108,21 +112,17 @@ public class Gini {
 
 	private Object createProxy(Class<?> clazz) {
 		SetMultimap<Method, Interceptor> interceptorsPerMethod = store.getInterceptorsPerMethod(clazz);
-		MethodInterceptor methodInterceptor = new MethodInterceptor(interceptorsPerMethod);
-		return org.theglump.gini.Reflections.createProxy(clazz, methodInterceptor);
+		return org.theglump.gini.Reflections.createProxy(clazz, new MethodInterceptor(interceptorsPerMethod));
 	}
 
 	private void injectDependencies() {
 		for (Object bean : store.getBeans()) {
-			injectDependencies(bean);
+			inject(bean);
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	private void injectDependencies(Object bean) {
-		for (Field field : getAllFields(getProxifiedClass(bean.getClass()), withAnnotation(Inject.class))) {
-			Object dependency = store.getBean(field.getType(), field.getName());
-			injectField(bean, field, dependency);
-		}
+	private Set<Field> getInjectFields(Object bean) {
+		return getAllFields(getProxifiedClass(bean.getClass()), withAnnotation(Inject.class));
 	}
+
 }
