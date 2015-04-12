@@ -37,7 +37,7 @@ import com.google.common.base.Preconditions;
  * @author sebastien.rozange
  * 
  */
-public class GiniContext {
+public class Gini {
 
 	private final BeanStore store;
 	private final Reflections reflections;
@@ -49,7 +49,7 @@ public class GiniContext {
 	 *
 	 * @param packageName
 	 */
-	public GiniContext(String packageName) {
+	public Gini(String packageName) {
 		Preconditions.checkNotNull(packageName);
 
 		this.store = new BeanStore();

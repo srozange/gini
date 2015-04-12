@@ -10,7 +10,7 @@ import org.theglump.gini.bean.StepImpl1;
 import org.theglump.gini.bean.StepImpl2;
 
 // Integration tests
-public class GiniContextTest {
+public class GiniTest {
 
 	@Inject
 	private Root root;
@@ -18,7 +18,7 @@ public class GiniContextTest {
 	@Test
 	public void shoud_succeed() {
 		// Setup
-		GiniContext ctx = new GiniContext("org.theglump.gini.bean");
+		Gini ctx = new Gini("org.theglump.gini.bean");
 
 		// Test
 		root = ctx.getBean(Root.class);
@@ -36,7 +36,7 @@ public class GiniContextTest {
 	@Test
 	public void shoud_succeed_with_auto_inject() {
 		// Setup
-		GiniContext ctx = new GiniContext("org.theglump.gini.bean");
+		Gini ctx = new Gini("org.theglump.gini.bean");
 
 		// Test
 		ctx.inject(this);
