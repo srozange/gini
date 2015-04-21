@@ -12,7 +12,6 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-import com.google.common.collect.SetMultimap;
 import org.reflections.Reflections;
 import org.theglump.gini.annotation.Advice;
 import org.theglump.gini.annotation.Around;
@@ -20,6 +19,7 @@ import org.theglump.gini.annotation.Inject;
 import org.theglump.gini.annotation.Managed;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.SetMultimap;
 
 /**
  * Gini is a simple DI Container and AOP engine : beans are singletons and
@@ -41,6 +41,16 @@ public class Gini {
 	private final BeanStore store;
 	private final Reflections reflections;
 	private final InterceptorHelper interceptorHelper;
+
+	/**
+	 * Initialize a new context by scanning all classes and sub-classes of the
+	 * given package
+	 *
+	 * @param packageName
+	 */
+	public static Gini initialize(String packageName) {
+		return new Gini(packageName);
+	}
 
 	/**
 	 * Initialize a new context by scanning all classes and sub-classes of the

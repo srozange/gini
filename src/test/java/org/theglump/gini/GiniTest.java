@@ -18,7 +18,7 @@ public class GiniTest {
 	@Test
 	public void shoud_succeed() {
 		// Setup
-		Gini ctx = new Gini("org.theglump.gini.bean");
+		Gini ctx = Gini.initialize("org.theglump.gini.bean");
 
 		// Test
 		root = ctx.getBean(Root.class);
@@ -36,7 +36,7 @@ public class GiniTest {
 	@Test
 	public void shoud_succeed_with_auto_inject() {
 		// Setup
-		Gini ctx = new Gini("org.theglump.gini.bean");
+		Gini ctx = Gini.initialize("org.theglump.gini.bean");
 
 		// Test
 		ctx.inject(this);
